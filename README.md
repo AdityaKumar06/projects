@@ -40,16 +40,3 @@ winfr C: D: /regular /n \Users\ABT_135\Downloads\*.pdf
 winfr C: D: /extensive /n \Users\ABT_135\Downloads\*.pdf
 
 
-
-<form id="myForm">
-  <input type="text" name="name" placeholder="Enter your name" >
-  <button type="submit">Submit</button>
-</form>
-
-<script>
-  document.getElementById("myForm").addEventListener("submit", function(event) {
-    event.preventDefault(); 
-    window.location.href = "payment.php";
-  });
-</script>
-
