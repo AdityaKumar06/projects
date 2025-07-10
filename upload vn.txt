@@ -1,0 +1,128 @@
+<div class="form-group">
+  <label for="logo" class="col-sm-2 control-label">Logo Image</label>
+  <div class="col-sm-10">
+    <input type="file" class="form-control" id="logo" name="logo">
+  </div>
+</div>
+------------------------------
+function coverUpload() {
+  $("#cover_upload").submit();
+}
+
+$("#cover_upload").submit(function (e) {
+  e.preventDefault(); // Prevent default submit
+
+  $("#loader").show();
+  $("#loader").html('<img src="image/tenor.gif" alt="" height="30" width="60" >Loading...');
+
+  var url = "../controller/add-cover-process.php";
+
+  var formData = new FormData(this); // Capture all form data including file
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: formData,
+    contentType: false,
+    processData: false,
+    success: function (result) {
+      var obj = JSON.parse(result);
+      $("#loader").html(obj.html);
+      if (obj.status == "success") {
+        $("#cover_upload").trigger("reset");
+      }
+      $(window).scrollTop(0);
+    },
+  });
+});
+-------------------------------------------------
+<?php
+if(isset($_SERVER['HTTP_REFERER'])) {
+	include_once '../model/functions.php';
+	$sent_object = new Sanitize();
+
+	// Clean all inputs
+	$magazine_title = $sent_object->cleanseString($_POST['title']);
+	$magazine_heading = $sent_object->cleanseHtml($_POST['heading']);
+	$mag_issue = $sent_object->cleanseString($_POST['mag_issue']);
+	$mag_edition = $sent_object->cleanseString($_POST['edition']);
+	$mag_type = $sent_object->cleanseString($_POST['type']);
+	$mag_year = $sent_object->cleanseString($_POST['year']);
+	$mag_month = $sent_object->cleanseString($_POST['month']);
+	$mag_backlink = $sent_object->cleanseString($_POST['backlink']);
+	$mag_image = $sent_object->cleanseString($_POST['image']);
+	$mag_keyword = $sent_object->cleanseString($_POST['keywords']);
+	$mag_description = $sent_object->cleanseString($_POST['description']);
+	$mag_url = $sent_object->urlConvert($_POST['url']);
+
+	// Handle logo upload
+	$logo_name = '';
+	if (isset($_FILES['logo']) && $_FILES['logo']['error'] == 0) {
+		$target_dir = "../view/uploads/";
+		$logo_name = time() . '_' . basename($_FILES["logo"]["name"]);
+		$target_file = $target_dir . $logo_name;
+
+		$allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+		if (in_array($_FILES["logo"]["type"], $allowed_types)) {
+			move_uploaded_file($_FILES["logo"]["tmp_name"], $target_file);
+		} else {
+			$logo_name = ''; // Don't save if invalid
+		}
+	}
+
+	// Validation
+	if (
+		$magazine_title === '' || $mag_issue === '' || $mag_edition === '' ||
+		$mag_type === '' || $mag_year === '' || $mag_month === '' ||
+		$mag_image === '' || $mag_url === '' || $mag_description === ''
+	) {
+		$res['html'] = "Failed. All fields should be filled.";
+		$res['status'] = "error";
+		echo json_encode($res);
+		exit;
+	}
+
+	// Save to DB
+	$mag_obj = new Magazineclass();
+	$add_magazine = $mag_obj->addMagazineCover(
+		$magazine_heading, $mag_issue, $mag_edition, $mag_type, $mag_year,
+		$mag_month, $mag_image, $magazine_title, $mag_url, $mag_keyword,
+		$mag_description, $mag_backlink, $logo_name
+	);
+
+	if ($add_magazine > 0) {
+		$res['html'] = "Magazine cover uploaded successfully.";
+		$res['status'] = "success";
+	} else {
+		$res['html'] = "Failed. Please try again.";
+		$res['status'] = "error";
+	}
+	echo json_encode($res);
+} else {
+	echo "<p style='color:red; text-align:center;'>Unauthorized page</p>";
+}
+?>
+--------------------------------------------------
+function addMagazineCover($magazine_heading, $mag_issue, $mag_edition, $mag_type, $mag_year, $mag_month, $mag_image, $magazine_title, $mag_url, $mag_keyword, $mag_description, $mag_backlink, $logo_image = '')
+{
+	$mysq = new Connection;
+	$mysqli = $mysq->connect();
+
+	// Add new column `logo_image` if not already present in your DB
+	$sql = "INSERT INTO `magazine_issue` (
+		`magazine_id`, `magazine_name`, `issue`, `edition`, `type`, `year`,
+		`month`, `image`, `title`, `short_title`, `display`, `url`,
+		`keywords`, `description`, `backlink`, `logo_image`
+	) VALUES (
+		NULL, '$magazine_heading', '$mag_issue', '$mag_edition', '$mag_type',
+		'$mag_year', '$mag_month', '$mag_image', '$magazine_title', '', '', 
+		'$mag_url', '$mag_keyword', '$mag_description', '$mag_backlink', '$logo_image'
+	)";
+
+	$response = $mysqli->query($sql);
+	return $mysqli->affected_rows;
+}
+--------------------------------------------------------
+ALTER TABLE `magazine_issue` ADD `logo_image` VARCHAR(255) NULL AFTER `backlink`;
+
+
+------------------------------
