@@ -1,0 +1,469 @@
+<?php
+include('include/checklogin.php');
+include('../model/functions.php');
+$magazine_id = $_GET['id'];
+if(isset($magazine_id) && $magazine_id !== '')
+{
+	$magazine_id = preg_replace('/[^A-Za-z0-9\- ]/', '', $magazine_id);
+	$mag_obj = new Magazineclass();
+	$get_cover = $mag_obj->getMagazineCover($magazine_id);
+	$check_empty = count($get_cover);
+	if($check_empty > 0)
+	{
+		foreach($get_cover as $row) 
+		{
+			$mag_id = $row->magazine_id;
+			$mag_issue = $row->issue;
+			$mag_edition = $row->edition;
+			$mag_title = $row->title;
+			$mag_month = $row->month;
+			$magazine_image = $row->image;
+			$mag_type = $row->type;
+			$mag_year = $row->year;
+			$mag_image = $row->image;
+			$mag_url = $row->url;
+			$mag_heading = $row->magazine_name;
+			$mag_keywords = $row->keywords;
+			$mag_description = $row->description;
+		}
+	}
+	
+}	
+else
+{
+	header('Location:magazine.php');
+}
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Admin Panel</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+   <link rel="stylesheet" href="css/admin.css">
+   <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src='//cdn.tinymce.com/4/tinymce.min.js'></script>
+	 <script>
+		$(document).ready(function() {
+		$('#mag_issue').val('<?php echo $mag_issue; ?>');
+		$('#mag_edition').val('<?php echo $mag_edition; ?>');
+		$('#mag_type').val('<?php echo $mag_type; ?>');
+		$('#mag_year').val('<?php echo $mag_year; ?>');
+		$('#mag_month').val('<?php echo $mag_month; ?>');
+		
+	  });
+			
+	</script>
+</head>
+<body>
+<div class="container-fluid pad-zero flex">
+<div class="col-sm-2 left-nav pad-zero full-height">
+
+<!--+++++++++menu part++++++++++++++++++++-->
+<?php include('include/menu.php'); ?>
+<!--+++++++++menu part++++++++++++++++++++-->
+</div><!--End of div class col-sm-1-->
+<div class="col-sm-10 pad-zero right-side">
+<!--+++++++ Horizontal Menu start from Here ++++++++-->
+<?php include('include/horizontal-menu.php'); ?>
+<!--+++++++ Horizontal Menu ends Here ++++++++-->
+<div class="col-sm-12 below-nav">
+<div style="float:left">
+<h3>Magazine <span class="indi-txt">Home > Add-Cover</span></h3>
+</div>
+<div style="float:right; padding-top:10px;"><button onclick="coverUpdate()" type="button" class="btn btn-primary"><i class="fa fa-floppy-o" aria-hidden="true"></i></button>&nbsp;<a href='../controller/delete-cover-process.php?id=<?php echo "$magazine_id";?>' onclick="return confirm('Are you sure?')"  class="btn btn-danger"><i class="fa fa-trash" aria-hidden="true"></i></a>&nbsp;<a href="edit-magazine.php?id=<?php echo $mag_id; ?>" type="button" class="btn btn-default"><i class="fa fa-reply" aria-hidden="true"></i></a></div>
+</div><!--End of div class col-sm-12-->
+<div class="col-sm-12">
+<div class="col-sm-12">
+<div class="col-sm-12 news-list-div">
+<p><i class="fa fa-pencil" aria-hidden="true"></i>Edit Cover</p>
+</div><!--End of div class col-sm-12-->
+<div class="col-sm-12 news-list-table">
+ 
+<ul class="nav nav-tabs">
+    <li id="gen-button" class="active"><a>General</a></li>  
+    <li id="img-button" ><a>Image</a></li>
+	 <li id="seo-button" ><a>SEO</a></li>
+   
+  </ul>
+  
+<div class="col-sm-12 form-area">
+<form id="cover_update" class="form-horizontal" action="" method="POST" enctype="multipart/form-data">
+<p id="loader" align="center"><img src="image/tenor.gif" alt="" height="30" width="60" >Loading...</p>
+<div id="general">
+
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Cover Story Heading</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="inputEmail3" name="heading" value="<?php echo $mag_heading; ?>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Issue</label>
+    <div class="col-sm-10">
+      <select id="mag_issue" class="form-control" name="mag_issue">
+	  <option value="">Select Issue</option>
+	
+	  <option value="india">INDIA</option>
+	  <option value="us">USA</option>
+	  <option value="asia">ASIA</option>
+	
+	 
+	</select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Edition</label>
+    <div class="col-sm-10">
+      <select class="form-control" id="mag_edition" name="edition">
+	  <option value="">Select Edition</option>
+      														
+		<option value="us issue">US ISSUE</option>
+        <option value="us monthly">US MONTHLY</option>
+		<option value="us monthly special">US MONTHLY SPECIAL</option>
+		<option value="us monthly edition">US MONTHLY EDITION</option>
+		<option value="us special issue">US SPECIAL ISSUE</option> 																
+		<option value="india issue">INDIA ISSUE</option>
+		<option value="india monthly special">INDIA MONTHLY SPECIAL</option>
+		<option value="india special">INDIA SPECIAL</option>
+		<option value="special edition">SPECIAL EDITION</option>
+		<option value="asia issue">ASIA ISSUE</option>
+	  
+	</select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Type</label>
+    <div class="col-sm-10">
+      <select class="form-control" id="mag_type" name="type">
+	  <option value="">Select Type</option>
+	  <option value="monthly">Monthly</option>
+	  <option value="monthly-special">Monthly Special</option>
+	  <option value="yearly">Yearly</option>
+	  
+	 
+	</select>
+    </div>
+  </div>
+   <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Year</label>
+    <div class="col-sm-10">
+      <select class="form-control" id="mag_year" name="year">
+          <option>2020</option>
+	  <?php
+		$currentYear = date('Y');
+		
+		for($i=$currentYear; $i >=2014; $i--)
+		{
+			echo '<option>'.$i.'</option>';
+		}	  
+	  
+	  ?>	  
+	  
+	</select>
+    </div>
+  </div>
+   <div class="form-group">
+    <label for="inputPassword3" class="col-sm-2 control-label">Month</label>
+    <div class="col-sm-10">
+      <select class="form-control" id="mag_month" name="month">
+	  <option value="January">January</option>
+	  <option value="February">February</option>
+	  <option value="March">March</option>
+	  <option value="April">April</option>
+	  <option value="May">May</option>
+	  <option value="June">June</option>
+	  <option value="July">July</option>
+	  <option value="August">August</option>
+	  <option value="September">September</option>
+	  <option value="October">October</option>
+	  <option value="November">November</option>
+	  <option value="December">December</option>
+	 
+	</select>
+    </div>
+  </div>
+  <div class="form-group">
+		<label for="inputEmail3" class="col-sm-2 control-label">URL</label>
+		<div class="col-sm-10">
+		  <input type="text" class="form-control" id="inputEmail3" name="url" value="<?php echo $mag_url; ?>">
+		</div>
+	  </div>
+	  
+  
+ </div>  <!--End of div id general here-->
+ <!--+++++++++++++++++++++++++++++++++++++++++++++-->
+ <div id="seo">
+  <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Meta Title</label>
+    <div class="col-sm-10">
+	<input type="hidden" class="form-control" id="inputEmail3" name="magazine_id" value="<?php echo $mag_id; ?>">
+      <input type="text" class="form-control" id="inputEmail3" name="title" value="<?php echo $mag_title; ?>">
+    </div>
+  </div>
+	 <div class="form-group">
+		<label for="inputEmail3" class="col-sm-2 control-label">Keywords</label>
+		<div class="col-sm-10">
+		  <input type="text" class="form-control" id="inputEmail3" name="keywords" value="<?php echo $mag_keywords; ?>">
+		</div>
+	  </div>
+	  <div class="form-group">
+		<label for="inputEmail3" class="col-sm-2 control-label">Description</label>
+		<div class="col-sm-10">
+		  <input type="text" class="form-control" id="inputEmail3" name="description" value="<?php echo $mag_description; ?>">
+	</div>
+  </div>
+ </div>  <!--End of div id seo here-->
+ <!--+++++++++++++++++++++++++++++++++++++++++++++-->
+  <div id="img-frm">
+ 
+	 <div class="form-group">
+    <label for="inputEmail3" class="col-sm-2 control-label">Image</label>
+    <div class="col-sm-8">
+      <input type="text" id="news-image" class="form-control" name="image" value="<?php echo $mag_image; ?>">
+      <input type="hidden" id="news-image-url" class="form-control" id="inputEmail3" name="image-url" value="<?php echo DIR_IMAGE.$mag_image; ?>">
+    </div>
+	<!--+++++++++++++++++++++++++++++++++++++++++++++-->
+	<div class="col-sm-2">
+	<!-- Trigger the modal with a button -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus" aria-hidden="true"></i></button>
+
+	</div><!--End of div class col-sm-2-->
+	<!--+++++++++++++++++++++++++++++++++++++++++++++-->
+  </div>
+	 
+ </div>  <!--End of div id seo here-->
+ <!--+++++++++++++++++++++++++++++++++++++++++++++-->
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10" align="right">
+      <button type="submit" class="btn btn-default hide">Submit</button>
+    </div>
+  </div>
+ 
+</form>
+
+</div>  <!--End of div class col-sm-12-->
+<!--+++++++++++++++++++++++++++++++++++++++++++++-->
+<div id="img-part">
+<div class="col-sm-12 news-list-div">
+<p><i class="fa fa-picture-o" aria-hidden="true"></i> Image</p>
+</div><!--End of div class col-sm-12-->
+<div class="col-sm-12 news-list-table grey-background">
+ <img id="to_upload" src="<?php echo DIR_IMAGE.$mag_image; ?>" alt="" height="150" width="200" >
+</div><!--End of div class col-sm-12-->
+</div><!--End of div class img part-->
+<!--++++++++++++++++++++++++++++++++++++++++++++++-->
+</div><!--End of div class col-sm-12-->
+</div><!--End of div class col-sm-12-->
+</div><!--End of div class col-sm-12-->
+
+<div class="col-sm-12" align="center">
+<p class="copyright">Business Fortune ©<?= date('Y') ?> All Rights Reserved.<br>
+Version 1.0</p>
+
+</div><!--End of div class col-sm-12-->
+
+</div><!--End of div class col-sm-11-->
+
+</div><!--End of div class container-fluid-->
+
+<!--++++++++Modal body start from here ++++++++++-->
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog  modal-lg" >
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+         <span class="user-icon"><b>Image manager</b></span><button type="button" class="close" data-dismiss="modal">&times;</button>
+		 <hr>
+		 <div class="col-sm-12"><!--Search image div-->
+		 
+		<form id="news_img_search" class="form-horizontal" method="POST" enctype="multipart/form-data">
+		 <div class="form-group">
+			<div class="col-sm-3 pad-zero">
+			   <select class="form-control" id="image_issue" name="search_issue" >
+					<option value="us">USA</option>
+					<option value="asia">Asia</option>				
+				  </select>
+			</div>
+			<div class="col-sm-7 pad-zero">
+			  <input type="text" class="form-control radius-zero" id="email" name="to-search" placeholder="Search...">
+			</div>
+			<div class="col-sm-2 pad-zero">
+			 <button type="submit" class="btn btn-primary radius-zero"><i class="fa fa-search" aria-hidden="true"></i></button>
+			</div>
+		  </div>
+	
+		</form>
+		 
+		 </div><!--End of div class col-sm-12-->
+      </div>
+      <div class="modal-body" style="max-height:500px; overflow:auto;">
+       <div class="col-sm-12" id="imageContainer"></div>
+      </div>
+      <div class="modal-footer" style="border:none;">
+        <!--IMAGE UPLOAD FORM START HERE-->
+		 <form id="img_upload" class="form-horizontal" method="POST" enctype="multipart/form-data">
+		 	<p id="uploadResult" align="center"><img src="image/tenor.gif" alt="" height="30" width="60" >Loading...</p>
+			  <div class="form-group">
+			  <div class="col-sm-12" style="text-align:left; font-weight: bold;">Add New Image</div>
+				<div class="col-sm-3 pad-zero left-pad">
+				<select class="form-control" name="issue_name" >				
+					<option value="us">USA</option>
+					<option value="asia">Asia</option>		
+				  </select>
+				</div>
+				<div class="col-sm-3 pad-zero">
+					 <input type="file" class="form-control radius-zero" name="image">
+				</div>
+				<div class="col-sm-3 pad-zero">
+				   <button type="submit" class="btn btn-default radius-zero" style="width:100%;">Upload</button>
+				</div>
+			  </div>		 
+			 
+			</form> 
+        <!--IMAGE UPLOAD FORM ENDS HERE-->
+      </div>
+    </div>
+
+  </div>
+</div>
+<!--++++++++Modal Bidy ends here++++++++++-->
+<!--++++++++javascript code++++++++++-->
+<script src="js/view.js"></script>
+<script>
+function deleteImage(x,DIR_IMAGE)
+{
+	var nimage = x;
+	$("#news-image").val(nimage);
+	$("#news-image-url").val(DIR_IMAGE + nimage);
+	$('#myModal').modal('hide');
+	$("#to_upload").attr("src",DIR_IMAGE + nimage);
+}
+</script>
+<!--++++++++javascript code++++++++++-->
+</body>
+</html>
+
+this edit-cover.php
+
+
+<?php
+if(isset($_SERVER['HTTP_REFERER']))
+{
+	include_once '../model/functions.php';
+	$sent_object = new Sanitize();
+	$magazine_id = $_POST['magazine_id'];
+	$magazine_id = $sent_object->cleanseInt($magazine_id);
+	
+	$magazine_title = $_POST['title'];
+	$magazine_title = $sent_object->cleanseString($magazine_title);
+	
+	$magazine_heading= $_POST['heading'];
+	$magazine_heading = $sent_object->cleanseHtml($magazine_heading);
+	
+	$mag_issue = $_POST['mag_issue'];
+	$mag_issue = $sent_object->cleanseString($mag_issue);
+	
+	$mag_edition = $_POST['edition'];
+	$mag_edition = $sent_object->cleanseString($mag_edition);
+	
+	$meta_title = $_POST['meta_title'];
+	$meta_title = $sent_object->cleanseString($meta_title);
+		
+	$mag_type = $_POST['type'];
+	$mag_type = $sent_object->cleanseString($mag_type);
+	
+	$mag_year = $_POST['year'];
+	$mag_year = $sent_object->cleanseString($mag_year);
+	
+	$mag_month = $_POST['month'];
+	$mag_month = $sent_object->cleanseString($mag_month);
+	
+	$mag_image = $_POST['image'];
+	$mag_image = $sent_object->cleanseString($mag_image);
+	echo"$mag_image";
+	
+	$keywords = $_POST['keywords'];
+	$keywords = $sent_object->cleanseString($keywords);
+	
+	$description = $_POST['description'];
+	$description = $sent_object->cleanseString($description);
+	
+	$mag_url = $_POST['url'];
+	$mag_url = $sent_object->urlConvert($mag_url);
+	
+	if($magazine_title ==='' || $mag_issue ==='' || $mag_edition ==='' || $mag_type ==='' || $mag_year ==='' || $mag_month==='' || $mag_image==='')
+	{
+		echo "<p style='color:red; text-align:center;'>Failed. All field should be filled.</p>"; 
+		
+	}
+	else
+	{
+		$mag_obj = new Magazineclass();
+		$add_magazine = $mag_obj->updateMagazineCover($magazine_id,$magazine_title,$magazine_heading,$mag_issue,$mag_edition,$mag_type,$mag_year,$mag_month,$mag_image,$keywords,$description,$mag_url,$meta_title);
+		echo($meta_title);
+		if($add_magazine > 0)
+		{
+			echo "<p style='color:green; text-align:center;'>Magazine cover updated successfully.</p>"; 
+		}
+		else
+		{
+			echo "<p style='color:red; text-align:center;'>Failed. Please Try again.</p>"; 
+		}
+	}
+}
+else
+{
+		echo "<p style='color:red; text-align:center;'>Unauthorized page</p>";
+}
+
+?>
+
+this is update-cover-process.php
+
+
+function updateMagazineCover($magazine_id, $magazine_title, $magazine_heading, $mag_issue, $mag_edition, $mag_type, $mag_year, $mag_month, $mag_image, $keywords, $description, $mag_url, $meta_title)
+	{
+
+		$mysq = new Connection;
+		$mysqli = $mysq->connect();
+		$sql = "UPDATE `magazine_issue` SET `magazine_name`='$magazine_heading',`issue`='$mag_issue',`edition`='$mag_edition',`type`='$mag_type',`year`='$mag_year',`month`='$mag_month',`image`='$mag_image',`title`='$magazine_title',`url`='$mag_url',`keywords`='$keywords',`description`='$description' WHERE `magazine_id`='$magazine_id'";
+		$response = $mysqli->query($sql);
+		$response = $mysqli->affected_rows;
+		return $response;
+	}
+
+
+
+function coverUpdate() {
+  $("#cover_update").submit();
+}
+$("#cover_update").submit(function (e) {
+  $("#loader").show();
+  $("#loader").html(
+    '<img src="image/tenor.gif" alt="" height="30" width="60" >Loading...'
+  );
+  var url = "../controller/update-cover-process.php";
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: $("#cover_update").serialize(),
+    success: function (result) {
+      $("#loader").html(result);
+      $(window).scrollTop(0);
+    },
+  });
+
+  e.preventDefault();
+});
+ this is js 
+ this is its function 
+
+i want to add one more field in geral section s choose image to edit in my backend there is column name as logo_imag i also want to edit dat while all other fields
